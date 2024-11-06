@@ -1,16 +1,33 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"math"
+)
 
 func main() {
-	fmt.Println("Cinema:")
-	fmt.Println("  1 2 3 4 5 6 7 8")
 
-	for i := 1; i <= 7; i++ {
-		fmt.Printf("%d ", i)
-		for j := 1; j <= 8; j++ {
-			fmt.Print("S ")
-		}
-		fmt.Println()
+	var rows, seatsForRow int
+
+	fmt.Println("Enter the number of rows:")
+	fmt.Scanln(&rows)
+
+	fmt.Println("Enter the number of seats in each row:")
+	fmt.Scanln(&seatsForRow)
+
+	seats := rows * seatsForRow
+	var totalIncome int
+
+	if seats > 60 {
+		fistRows := math.Floor(float64(rows) / float64(2))
+		lastRows := rows - int(fistRows)
+
+		totalIncome = int(int(fistRows)*seatsForRow*10) + int(int(lastRows)*seatsForRow*8)
+
+	} else {
+		totalIncome = rows * seatsForRow * 10
 	}
+
+	fmt.Println("Total income:")
+	fmt.Printf("$%d", totalIncome)
 }
