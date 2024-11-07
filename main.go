@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math"
+	"os"
 )
 
 func main() {
@@ -18,25 +19,59 @@ func main() {
 	seats := make([][]bool, rows)
 	buildRoom(&seats, seatsForRow)
 
-	totalSeats := rows * seatsForRow
+	for {
+		var option int
+		menu()
+		fmt.Scanln(&option)
 
-	var totalIncome int
+		if option == 1 {
+			displaySeats(&seats, seatsForRow)
+		} else if option == 2 {
+			fmt.Println()
+			costSeat := getTicket(&seats)
+
+			fmt.Println()
+			fmt.Printf("Ticket price: $%d\n", costSeat)
+
+		} else if option == 0 {
+			os.Exit(0)
+		}
+	}
+}
+
+func menu() {
+	fmt.Println()
+	fmt.Println("1. Show the seats")
+	fmt.Println("2. Buy a ticket")
+	fmt.Println("0. Exit")
+}
+
+func getTicket(seats *[][]bool) int {
+	var row, seat int
+
+	fmt.Println("Enter a row number:")
+	fmt.Scanln(&row)
+
+	fmt.Println("Enter a seat number in that row:")
+	fmt.Scanln(&seat)
+
+	(*seats)[row-1][seat-1] = true
+
+	return getSeatCost(seats, row)
+}
+
+func getSeatCost(seats *[][]bool, row int) int {
+
+	totalSeats := len(*seats) * len((*seats)[0])
 
 	if totalSeats > 60 {
-		fistRows := math.Floor(float64(rows) / float64(2))
-		lastRows := rows - int(fistRows)
-
-		totalIncome = int(int(fistRows)*seatsForRow*10) + int(int(lastRows)*seatsForRow*8)
-
-	} else {
-		totalIncome = rows * seatsForRow * 10
+		fistRows := math.Floor(float64(len(*seats)) / float64(2))
+		if row > int(fistRows) {
+			return 8
+		}
 	}
 
-	// fmt.Println("Total income:")
-	// fmt.Printf("$%d", totalIncome)
-
-	fmt.Println()
-	displaySeats(&seats, seatsForRow)
+	return 10
 }
 
 func buildRoom(seats *[][]bool, seatsForRow int) {
@@ -46,7 +81,8 @@ func buildRoom(seats *[][]bool, seatsForRow int) {
 }
 
 func displaySeats(seats *[][]bool, seatsForRow int) {
-
+	fmt.Println()
+	fmt.Println("Cinema:")
 	fmt.Printf(" ")
 	for k := 1; k <= seatsForRow; k++ {
 		fmt.Printf(" %d", k)
