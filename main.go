@@ -6,9 +6,24 @@ import (
 	"os"
 )
 
+type TickerBought struct {
+	Count  int
+	Income int
+}
+
+func (t *TickerBought) add(cost int) {
+	t.Count = t.Count + 1
+	t.Income = t.Income + cost
+}
+
 func main() {
 
 	var rows, seatsForRow int
+
+	tickerBought := TickerBought{
+		Count:  0,
+		Income: 0,
+	}
 
 	fmt.Println("Enter the number of rows:")
 	fmt.Scanln(&rows)
@@ -23,16 +38,19 @@ func main() {
 		var option int
 		menu()
 		fmt.Scanln(&option)
-
 		if option == 1 {
 			displaySeats(&seats, seatsForRow)
 		} else if option == 2 {
 			fmt.Println()
-			costSeat := getTicket(&seats)
+			costSeat := getTicket(&seats, rows, seatsForRow)
+
+			tickerBought.add(costSeat)
 
 			fmt.Println()
 			fmt.Printf("Ticket price: $%d\n", costSeat)
 
+		} else if option == 3 {
+			statistics(&tickerBought, rows, seatsForRow)
 		} else if option == 0 {
 			os.Exit(0)
 		}
@@ -43,19 +61,32 @@ func menu() {
 	fmt.Println()
 	fmt.Println("1. Show the seats")
 	fmt.Println("2. Buy a ticket")
+	fmt.Println("3. Statistics")
 	fmt.Println("0. Exit")
 }
 
-func getTicket(seats *[][]bool) int {
+func getTicket(seats *[][]bool, rows, seatsForRow int) int {
 	var row, seat int
 
-	fmt.Println("Enter a row number:")
-	fmt.Scanln(&row)
+	for {
+		fmt.Println("Enter a row number:")
+		fmt.Scanln(&row)
 
-	fmt.Println("Enter a seat number in that row:")
-	fmt.Scanln(&seat)
+		fmt.Println("Enter a seat number in that row:")
+		fmt.Scanln(&seat)
 
-	(*seats)[row-1][seat-1] = true
+		if row > rows || seat > seatsForRow {
+			fmt.Printf("\nWrong input!\n\n")
+			continue
+		}
+
+		if !(*seats)[row-1][seat-1] {
+			(*seats)[row-1][seat-1] = true
+			break
+		}
+
+		fmt.Printf("\nThat ticket has already been purchased!\n\n")
+	}
 
 	return getSeatCost(seats, row)
 }
@@ -101,4 +132,34 @@ func displaySeats(seats *[][]bool, seatsForRow int) {
 		}
 		fmt.Println()
 	}
+}
+
+func statistics(ticker *TickerBought, rows, seatsForRow int) {
+
+	totalIncome := totalIncome(rows, seatsForRow)
+	totalSeats := rows * seatsForRow
+
+	percentage := (float64(ticker.Count) / float64(totalSeats)) * 100
+
+	fmt.Println()
+	fmt.Printf("Number of purchased tickets: %d\n", ticker.Count)
+	fmt.Printf("Percentage: %.2f%%\n", percentage)
+	fmt.Printf("Current income: $%d\n", ticker.Income)
+	fmt.Printf("Total income: $%d\n", totalIncome)
+}
+
+func totalIncome(rows, seatsForRow int) int {
+	if rows*seatsForRow >= 60 {
+		fistRows := math.Floor(float64(rows) / float64(2))
+		lastRows := rows - int(fistRows)
+		return int(int(fistRows)*seatsForRow*10) + int(int(lastRows)*seatsForRow*8)
+	} else {
+		return rows * seatsForRow * 10
+	}
+}
+
+// Retona el numero del asiento
+func getNumSeat(row, seatsForRow, seat int) int {
+	seatNumber := (row - 1*seatsForRow) + seat
+	return seatNumber
 }
